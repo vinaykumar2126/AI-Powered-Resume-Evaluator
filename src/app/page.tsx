@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { extractTextFromPdf } from "@/lib/utils";
 import { Loader2, Upload, FileText, CheckCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -93,7 +94,8 @@ export default function Home() {
     <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">ResumAI Evaluator</h1>
-        <p className="text-xl text-center mb-12">Optimize your resume for your dream job using AI</p>
+        <p className="text-xl text-center mb-4">Optimize your resume for your dream job using AI</p>
+        <p className="text-sm text-center mb-12 text-muted-foreground">Powered by OpenAI GPT-4 and NLP models (BERT, TF-IDF)</p>
         
         <div className="grid md:grid-cols-2 gap-8">
           <div>
@@ -124,11 +126,11 @@ export default function Home() {
 
             <h2 className="text-2xl font-semibold mt-8 mb-4">Step 2: Enter job description</h2>
             <form onSubmit={handleSubmit(onSubmit)}>
-              <textarea
+              <Textarea
                 {...register("jobDescription", { required: "Job description is required" })}
-                className="w-full h-64 p-4 border rounded-lg"
+                className="w-full h-64 p-4"
                 placeholder="Paste the job description here..."
-              ></textarea>
+              />
               {errors.jobDescription && (
                 <p className="text-destructive mt-1">{errors.jobDescription.message}</p>
               )}
