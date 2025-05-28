@@ -9,84 +9,146 @@ export function formatScore(score: number): string {
   return `${Math.round(score * 100)}%`;
 }
 
-export async function extractTextFromPdf(file: File): Promise<string> {
+// AI-powered resume analysis
+export async function analyzeResumeWithAI(resumeText: string, jobDescription: string): Promise<{
+  score: number;
+  feedback: string;
+  strengths: string[];
+  improvements: string[];
+  matchedSkills: string[];
+  missingSkills: string[];
+}> {
   try {
-    // For PDF files, we'll attempt to use pdf-parse if available
-    // Otherwise, we'll just use a fallback mechanism for demo
+    console.log('🚀 Starting AI resume analysis...');
+    console.log('📄 Resume text length:', resumeText.length);
+    console.log('💼 Job description length:', jobDescription.length);
     
-    // In a real implementation, you'd use pdf-parse
-    // const pdfData = await pdfParse(await file.arrayBuffer());
-    // return pdfData.text;
+    const startTime = Date.now();
     
-    // For now, we'll just simulate some text extraction
-    // This will let us test the UI without needing pdf-parse dependency
-    const fileName = file.name.toLowerCase();
-    
-    // Generate sample text based on file name to make it seem more realistic
-    const mockResumeText = generateMockResumeText(fileName);
-    
-    return mockResumeText;
-    
+    const response = await fetch('/api/analyze-resume', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        resumeText,
+        jobDescription,
+      }),
+    });
+
+    const endTime = Date.now();
+    console.log(`⏱️ Analysis completed in ${endTime - startTime}ms`);
+
+    if (!response.ok) {
+      throw new Error('Failed to analyze resume');
+    }
+
+    const result = await response.json();
+    console.log('✅ Analysis result received:', {
+      score: result.score,
+      strengthsCount: result.strengths?.length || 0,
+      improvementsCount: result.improvements?.length || 0,
+      matchedSkillsCount: result.matchedSkills?.length || 0
+    });
+
+    return result;
   } catch (error) {
-    console.error('Error extracting PDF text:', error);
-    return 'Failed to extract text from PDF. Please try again or use a different file.';
+    console.error('❌ Error analyzing resume:', error);
+    throw new Error('Failed to analyze resume. Please try again.');
   }
 }
 
-// Helper function to generate dummy resume text for testing
-function generateMockResumeText(fileName: string): string {
-  const skills = [
-    "JavaScript", "TypeScript", "React", "NextJS", "Node.js", 
-    "Python", "Java", "C#", "SQL", "AWS", "Azure", "Docker",
-    "Machine Learning", "Data Science", "Project Management"
-  ];
-  
-  // Pick some random skills based on filename to simulate different resumes
-  const fileNameHash = fileName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const selectedSkills = skills.filter((_, index) => (fileNameHash + index) % 3 === 0);
-  
-  return `
-John Doe
-Software Engineer
-email@example.com | (555) 123-4567 | linkedin.com/in/johndoe
+// Extract text from PDF using server-side API
+export async function extractTextFromPdf(file: File): Promise<string> {
+  try {
+    console.log('📄 Starting PDF extraction for:', file.name);
+    console.log('📊 File size:', file.size, 'bytes');
+    
+    const formData = new FormData();
+    formData.append('pdf', file);
 
-SUMMARY
-Experienced software engineer with 5+ years of professional experience in developing and maintaining high-quality applications. Skilled in full-stack development, problem-solving, and team collaboration.
+    const startTime = Date.now();
 
-EDUCATION
-University of Technology
-Bachelor of Science in Computer Science, 2015-2019
-GPA: 3.8/4.0
+    const response = await fetch('/api/extract-pdf', {
+      method: 'POST',
+      body: formData,
+    });
 
-SKILLS
-${selectedSkills.join(', ')}
+    const endTime = Date.now();
+    console.log(`⏱️ PDF extraction completed in ${endTime - startTime}ms`);
 
-EXPERIENCE
-Senior Software Engineer | Tech Solutions Inc. | 2021-Present
-- Developed and maintained multiple web applications using React and Node.js
-- Implemented CI/CD pipelines that reduced deployment time by 40%
-- Led a team of 3 developers to successfully deliver projects on time and within budget
-- Improved application performance by 60% through code optimization
+    if (!response.ok) {
+      throw new Error('Failed to extract PDF text');
+    }
 
-Software Engineer | Digital Innovations LLC | 2019-2021
-- Designed and developed RESTful APIs using Node.js and Express
-- Collaborated with UX designers to implement responsive user interfaces
-- Participated in code reviews and maintained coding standards
-- Reduced bug rate by 30% through comprehensive unit testing
+    const { text } = await response.json();
+    console.log('✅ PDF text extracted, length:', text.length);
+    
+    return text;
+  } catch (error) {
+    console.error('❌ Error extracting PDF text:', error);
+    throw new Error('Failed to extract text from PDF. Please ensure it\'s a valid PDF file.');
+  }
+}
 
-PROJECTS
-Project Management Dashboard
-- Created a project management tool using React, TypeScript and Firebase
-- Implemented real-time updates and notifications
-- Used by over 500 users with a 4.8/5 satisfaction rating
+// Extract skills from job description using AI
+export async function extractSkillsFromJobDescription(jobDescription: string): Promise<string[]> {
+  try {
+    const response = await fetch('/api/extract-skills', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ jobDescription }),
+    });
 
-E-commerce Platform
-- Built a scalable e-commerce platform using microservices architecture
-- Integrated payment processing and inventory management systems
-- Resulted in 25% increase in online sales
+    if (!response.ok) {
+      throw new Error('Failed to extract skills');
+    }
 
-CERTIFICATIONS
-AWS Certified Developer - Associate
-Microsoft Certified: Azure Developer Associate
-`;
+    const { skills } = await response.json();
+    return skills;
+  } catch (error) {
+    console.error('Error extracting skills:', error);
+    return [];
+  }
+}
+
+// Test AI connectivity
+export async function testAIConnection(): Promise<{
+  success: boolean;
+  message: string;
+  responseTime?: number;
+}> {
+  try {
+    console.log('🧪 Testing AI connection from client...');
+    
+    const response = await fetch('/api/test-ai');
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('✅ AI connection test successful!');
+      console.log('⏱️ AI response time:', result.responseTime, 'ms');
+      console.log('🤖 AI response:', result.aiResponse);
+      
+      return {
+        success: true,
+        message: `AI is working! Response time: ${result.responseTime}ms`,
+        responseTime: result.responseTime
+      };
+    } else {
+      console.log('❌ AI connection test failed:', result.error);
+      return {
+        success: false,
+        message: `AI test failed: ${result.error}`
+      };
+    }
+    
+  } catch (error) {
+    console.error('❌ Client AI test error:', error);
+    return {
+      success: false,
+      message: `Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
 }

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Utils</title>
+</head>
+<body>
+    <h1>Utils Testing</h1>
+    <button onclick="runTests()">Run Tests</button>
+    <div id="results"></div>
+    
+    <script type="module">
+        import { testMockResumeGeneration, testPdfExtraction, extractTextFromPdf, formatScore } from './src/lib/utils.js';
+        
+        window.runTests = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>Running tests...</h2>';
+            
+            // Test mock generation
+            testMockResumeGeneration();
+            
+            // Test PDF extraction
+            await testPdfExtraction();
+            
+            results.innerHTML += '<p>Check browser console for detailed results!</p>';
+        }
+    </script>
+</body>
+</html>

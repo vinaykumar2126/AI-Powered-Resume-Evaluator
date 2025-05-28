@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { extractTextFromPdf } from "@/lib/utils";
 import { Loader2, Upload, FileText, CheckCircle } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 
 type FormData = {
   jobDescription: string;
@@ -31,6 +30,7 @@ export default function Home() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'application/pdf': ['.pdf'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'text/plain': ['.txt']
     },
     maxFiles: 1,
@@ -178,12 +178,16 @@ export default function Home() {
                 
                 <div className="mb-6">
                   <h3 className="text-xl font-semibold mb-2">Feedback</h3>
-                  <ReactMarkdown className="prose">{result.feedback}</ReactMarkdown>
+                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                    {result.feedback}
+                  </div>
                 </div>
                 
                 <div className="mb-6">
                   <h3 className="text-xl font-semibold mb-2">Suggestions for Improvement</h3>
-                  <ReactMarkdown className="prose">{result.suggestions}</ReactMarkdown>
+                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                    {result.suggestions}
+                  </div>
                 </div>
                 
                 <div>
