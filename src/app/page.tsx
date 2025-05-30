@@ -16,7 +16,9 @@ type EvaluationResult = {
   score: number;
   feedback: string;
   suggestions: string;
-  keywords: string[];
+  presentKeywords: string[];
+  missingKeywords: string[];
+  keywords?: string[]; // Optional for backward compatibility
 };
 
 export default function Home() {
@@ -95,7 +97,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-8">ResumAI Evaluator</h1>
         <p className="text-xl text-center mb-4">Optimize your resume for your dream job using AI</p>
-        <p className="text-sm text-center mb-12 text-muted-foreground">Powered by OpenAI GPT-4 and NLP models (BERT, TF-IDF)</p>
+        <p className="text-sm text-center mb-12 text-muted-foreground">Powered by Google gemini-1.5-flash</p>
         
         <div className="grid md:grid-cols-2 gap-8">
           <div>
@@ -190,18 +192,58 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Keywords to Include</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {result.keywords.map((keyword, index) => (
-                      <span 
-                        key={index}
-                        className="bg-accent/20 text-accent-foreground px-3 py-1 rounded-full text-sm"
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
+                {/* Keywords Section */}
+                <div className="space-y-6">
+                  {/* Present Keywords */}
+                  {result.presentKeywords && result.presentKeywords.length > 0 && (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2 text-green-600">Keywords Already Present</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {result.presentKeywords.map((keyword, index) => (
+                          <span 
+                            key={index}
+                            className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm border border-green-200"
+                          >
+                            ✓ {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Missing Keywords */}
+                  {result.missingKeywords && result.missingKeywords.length > 0 && (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2 text-orange-600">Keywords to Include</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {result.missingKeywords.map((keyword, index) => (
+                          <span 
+                            key={index}
+                            className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm border border-orange-200"
+                          >
+                            + {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fallback for old format (backward compatibility) */}
+                  {result.keywords && !result.presentKeywords && !result.missingKeywords && (
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">Keywords</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {result.keywords.map((keyword: string, index: number) => (
+                          <span 
+                            key={index}
+                            className="bg-accent/20 text-accent-foreground px-3 py-1 rounded-full text-sm"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

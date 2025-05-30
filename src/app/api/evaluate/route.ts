@@ -37,10 +37,18 @@ Please provide your evaluation in the following JSON format. Keep feedback and s
   "score": 0.85,
   "feedback": "Detailed assessment paragraph explaining the overall match. Use plain text only.",
   "suggestions": "Detailed suggestions for improvement with specific actionable items. Use plain text only.",
-  "keywords": ["keyword1", "keyword2", "keyword3"]
+  "presentKeywords": ["keyword1", "keyword2"],
+  "missingKeywords": ["keyword3", "keyword4"]
 }
 
-Score should be between 0 and 1. Be specific and actionable in your feedback and suggestions. Do not use markdown formatting like ** or * in the feedback and suggestions fields.`;
+IMPORTANT INSTRUCTIONS:
+- Score should be between 0 and 1
+- "presentKeywords": Include ONLY keywords/skills from the job description that are ALREADY present in the resume
+- "missingKeywords": Include ONLY keywords/skills from the job description that are MISSING from the resume and should be added
+- Do NOT include the same keyword in both arrays
+- Be specific and actionable in your feedback and suggestions
+- Do not use markdown formatting like ** or * in the feedback and suggestions fields
+- Focus on technical skills, tools, technologies, and important job-related terms for keywords`;
 
       console.log('⏳ Sending request to Gemini API...');
       const startTime = Date.now();
@@ -72,8 +80,8 @@ Score should be between 0 and 1. Be specific and actionable in your feedback and
         
         // Fix quotes in array elements
         cleanedJson = cleanedJson.replace(/(["\w]+)\s*:\s*\[(.*?)\]/g, (match, key, arrayContent) => {
-          if (key.includes('keywords')) {
-            // Clean up keyword array specifically
+          if (key.includes('Keywords') || key.includes('keywords')) {
+            // Clean up keyword arrays specifically
             const cleaned = arrayContent
               .split(',')
               .map((item: string) => item.trim().replace(/^["']|["']$/g, ''))
@@ -99,15 +107,19 @@ Score should be between 0 and 1. Be specific and actionable in your feedback and
         const scoreMatch = text.match(/"score":\s*([\d.]+)/);
         const feedbackMatch = text.match(/"feedback":\s*"([^"]*(?:"[^"]*"[^"]*)*)"/);
         const suggestionsMatch = text.match(/"suggestions":\s*"([^"]*(?:"[^"]*"[^"]*)*)"/);
-        const keywordsMatch = text.match(/"keywords":\s*\[(.*?)\]/);
+        const presentKeywordsMatch = text.match(/"presentKeywords":\s*\[(.*?)\]/);
+        const missingKeywordsMatch = text.match(/"missingKeywords":\s*\[(.*?)\]/);
         
         evaluation = {
           score: scoreMatch ? parseFloat(scoreMatch[1]) : 0.5,
           feedback: feedbackMatch ? feedbackMatch[1] : "Unable to parse detailed feedback from AI response.",
           suggestions: suggestionsMatch ? suggestionsMatch[1] : "Unable to parse suggestions from AI response.",
-          keywords: keywordsMatch ? 
-            keywordsMatch[1].split(',').map(k => k.trim().replace(/['"]/g, '')).filter(k => k.length > 0) : 
-            ["technical-skills", "experience", "education"]
+          presentKeywords: presentKeywordsMatch ? 
+            presentKeywordsMatch[1].split(',').map(k => k.trim().replace(/['"]/g, '')).filter(k => k.length > 0) : 
+            [],
+          missingKeywords: missingKeywordsMatch ? 
+            missingKeywordsMatch[1].split(',').map(k => k.trim().replace(/['"]/g, '')).filter(k => k.length > 0) : 
+            ["technical-skills", "experience"]
         };
         
         console.log('🔄 Using fallback parsing result');
